@@ -278,3 +278,5 @@ MIT License — See individual scripts for details.
 For questions or suggestions, contact:
 Dr. Arli Aditya Parikesit
 i3L University Jakarta, Indonesia
+
+**AI Assistance Disclaimer**: This codebase was developed with the assistance of Claude Code. While the AI provided code generation, debugging, and structural support, the human developer maintains full responsibility for reviewing, testing, and maintaining all content and functionality.
