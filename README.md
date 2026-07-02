@@ -2,7 +2,7 @@
 
 The scripts were developed for this following journal manuscript:
 
-Dhea Priskila , Angelo Christiano Aouad Tomodok, Beatrice Valerie Basuki, Carissa Putri Pratama, Carolyn Nathaniel, Aishah Muhsin, Cheryl Yang, Daisy Jemima Bappedyanto, **Arli Aditya Parikesit**. 2026. Molecular Simulation-Based Drug Repurposing of Thioridazine and Losartan for Targeting CXCR4 and CCR5 Chemokine Receptors in Breast Cancer. _(in press/accepted)_. Journal of Science and Technology. UTHM Publisher, Malaysia.
+Dhea Priskila , Angelo Christiano Aouad Tomodok, Beatrice Valerie Basuki, Carissa Putri Pratama, Carolyn Nathaniel, Aishah Muhsin, Cheryl Yang, Daisy Jemima Bappedyanto, **Arli Aditya Parikesit**. 2026. Molecular Simulation-Based Drug Repurposing of Thioridazine and Losartan for Targeting CXCR4 and CCR5 Chemokine Receptors in Breast Cancer. https://bit.ly/3QMp1lR .18(1): 69-91 . Journal of Science and Technology. UTHM Publisher, Malaysia.
 
 Complete computational pipeline for structure-based virtual screening, lead characterisation, and optimisation.
 
