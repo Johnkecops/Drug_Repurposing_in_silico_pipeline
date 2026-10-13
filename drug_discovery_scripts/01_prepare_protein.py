@@ -2,8 +2,12 @@
 """
 Script 1: Protein Target Preparation for Molecular Docking
 
-Purpose: Download, prepare, and validate protein structures for docking.
-Converts PDB to PDBQT format, defines binding sites, generates docking grids.
+Purpose: Download a PDB structure, strip waters and ligands, and compute the
+docking box from the binding-site residues (or the whole protein for blind docking).
+
+Not done here: protonation (the ph argument is unused) and PDBQT conversion.
+Prepare the receptor PDBQT separately (ADFR prepare_receptor4.py or Open Babel)
+and protonate at pH 7.4 before docking.
 
 Usage:
     python 01_prepare_protein.py --pdb_id 3ODU --binding_residues 110,114,121,125

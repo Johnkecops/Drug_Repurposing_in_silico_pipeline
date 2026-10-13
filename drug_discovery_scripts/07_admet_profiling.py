@@ -2,8 +2,9 @@
 """
 Script 7: ADMET Profiling and Drug-Likeness Assessment
 
-Purpose: Evaluate ADMET properties and filter compounds for drug-likeness
-based on Lipinski's Rule of Five, PAINS filters, and additional metrics.
+Purpose: Compute drug-likeness descriptors (Lipinski's Rule of Five, TPSA,
+rule-of-thumb BBB and solubility heuristics). These are not measured ADMET:
+no hERG, metabolism, toxicity, or PAINS screen is performed.
 
 Usage:
     python 07_admet_profiling.py --smiles_file compounds.smi \\
@@ -15,6 +16,8 @@ import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import Descriptors, Crippen
 import os
+
+from smiles_io import read_smiles
 
 def assess_admet_properties(smiles_list, output_csv='admet_results.csv', 
                            verbose=True):
@@ -30,18 +33,19 @@ def assess_admet_properties(smiles_list, output_csv='admet_results.csv',
         DataFrame with ADMET properties and drug-likeness assessment
     """
     results = []
-    
-    # Load SMILES
+
+    # Stable compound IDs shared with stages 2 and 3 (see smiles_io.py)
     if isinstance(smiles_list, str) and os.path.isfile(smiles_list):
         if verbose:
             print(f"Reading SMILES from {smiles_list}...")
-        with open(smiles_list) as f:
-            smiles_list = [line.strip() for line in f]
-    
+        records = read_smiles(smiles_list)
+    else:
+        records = list(enumerate(smiles_list))
+
     if verbose:
-        print(f"Assessing {len(smiles_list)} compounds...")
-    
-    for i, smiles in enumerate(smiles_list):
+        print(f"Assessing {len(records)} compounds...")
+
+    for i, smiles in records:
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
             continue
@@ -70,7 +74,7 @@ def assess_admet_properties(smiles_list, output_csv='admet_results.csv',
         # Additional ADMET properties
         tpsa = Descriptors.TPSA(mol)  # Polar surface area (BBB penetration)
         aromatic_rings = Descriptors.NumAromaticRings(mol)
-        sp3_fraction = Descriptors.FractionCsp3(mol)
+        sp3_fraction = Descriptors.FractionCSP3(mol)
         
         # BBB penetrance prediction (TPSA < 60 and LogP 1-5)
         bbb_penetrant = 'YES' if (tpsa < 60 and 1 < logp < 5) else 'NO'

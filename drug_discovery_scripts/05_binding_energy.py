@@ -13,6 +13,7 @@ and use: mmpbsa.py -i mmpbsa.in -o results.dat -cp complex.prmtop \\
 import argparse
 import numpy as np
 import pandas as pd
+from prody import parsePDB
 
 def estimate_binding_energy_simple(protein_pdb, ligand_smiles, 
                                    output_csv='binding_energy.csv',
@@ -36,8 +37,7 @@ def estimate_binding_energy_simple(protein_pdb, ligand_smiles,
         Estimated ΔG_bind (kcal/mol)
     """
     from rdkit import Chem
-    from prody import *
-    
+
     if verbose:
         print("Calculating binding energy (simplified estimate)...")
         print("WARNING: This is a crude approximation for demonstration only!")

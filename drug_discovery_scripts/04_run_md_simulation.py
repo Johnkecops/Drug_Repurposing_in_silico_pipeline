@@ -19,10 +19,10 @@ from openmm.unit import *
 def run_md_simulation(protein_pdb, output_dir='md_output', 
                       production_time_ns=200, verbose=True):
     """
-    Run molecular dynamics simulation of protein-ligand complex.
-    
+    Run molecular dynamics simulation of a protein (protein-only input).
+
     Args:
-        protein_pdb: Protein structure (prepared PDB)
+        protein_pdb: Protein structure (prepared PDB). Ligands are not parametrised here.
         output_dir: Output directory for trajectory and logs
         production_time_ns: Production MD duration in nanoseconds
         verbose: Print progress
@@ -52,23 +52,23 @@ def run_md_simulation(protein_pdb, output_dir='md_output',
     if verbose:
         print(f"Solvated system: {modeller.topology.getNumAtoms()} atoms total")
     
-    # Create system
-    system = forcefield.createSystem(
-        modeller.topology,
-        nonbondedMethod=PME,
-        nonbondedCutoff=1.0*nanometer,
-        constraints=HBonds,
-        rigidWater=True
-    )
-    
-    # Add barostat and thermostat
-    system.addForce(MonteCarloBarostat(1*atmosphere, 300*kelvin))
+    # Create system. No barostat yet: the NVT stage must run at constant volume.
+    try:
+        system = forcefield.createSystem(
+            modeller.topology,
+            nonbondedMethod=PME,
+            nonbondedCutoff=1.0*nanometer,
+            constraints=HBonds,
+            rigidWater=True
+        )
+    except ValueError as err:
+        raise ValueError(f"{err}. This script takes protein-only input; "
+                         "parametrise ligands (GAFF or OpenFF) before running MD.") from err
+
     integrator = LangevinIntegrator(300*kelvin, 1/picosecond, 2*femtoseconds)
-    
-    # Create simulation
     simulation = Simulation(modeller.topology, system, integrator)
     simulation.context.setPositions(modeller.positions)
-    
+
     # Energy minimisation
     if verbose:
         print("Energy minimisation...")
@@ -76,16 +76,22 @@ def run_md_simulation(protein_pdb, output_dir='md_output',
     state = simulation.context.getState(getEnergy=True)
     if verbose:
         print(f"  Final energy: {state.getPotentialEnergy()/kilojoule_per_mole:.2f} kJ/mol")
-    
+
     # NVT equilibration (50 ps)
     if verbose:
         print("NVT equilibration (50 ps)...")
     simulation.context.setVelocitiesToTemperature(300*kelvin)
     simulation.step(25000)  # 50 ps at 2 fs/step
-    
-    # NPT equilibration (100 ps)
+
+    # NPT equilibration (100 ps). Add the barostat, then rebuild the simulation
+    # from the current state: forces cannot be added to a live context.
     if verbose:
         print("NPT equilibration (100 ps)...")
+    system.addForce(MonteCarloBarostat(1*atmosphere, 300*kelvin))
+    state = simulation.context.getState(getPositions=True, getVelocities=True)
+    integrator = LangevinIntegrator(300*kelvin, 1/picosecond, 2*femtoseconds)
+    simulation = Simulation(modeller.topology, system, integrator)
+    simulation.context.setState(state)
     simulation.step(50000)  # 100 ps
     
     # Production MD
@@ -117,7 +123,7 @@ def run_md_simulation(protein_pdb, output_dir='md_output',
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run MD simulation with OpenMM')
-    parser.add_argument('--pdb', required=True, help='Input PDB file (protein+ligand)')
+    parser.add_argument('--pdb', required=True, help='Input PDB file (protein only)')
     parser.add_argument('--output_dir', default='md_output', help='Output directory')
     parser.add_argument('--production_time_ns', type=int, default=200,
                        help='Production MD duration (ns)')
